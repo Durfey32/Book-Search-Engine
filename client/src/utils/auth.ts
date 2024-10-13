@@ -68,6 +68,13 @@ class AuthService {
       localStorage.removeItem('saved_books');
     }
   }
+
+  removeBookID(bookId: string): void {
+    const savedBookIds = this.getSavedBookIds();
+    const updatedSavedBookIds = savedBookIds.filter((id: string) => id !== bookId);
+  
+    this.saveBookIds(updatedSavedBookIds);
+  }
 }
 
 export default new AuthService();
