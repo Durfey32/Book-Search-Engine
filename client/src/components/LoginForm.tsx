@@ -1,17 +1,28 @@
-// see SignupForm.js for comments
 import { useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
-
-import { loginUser } from '../utils/API';
+import { useMutation } from '@apollo/client';
+import { LOGIN_USER } from '../utils/mutations';
 import Auth from '../utils/auth';
 import type { User } from '../models/User';
 
-// biome-ignore lint/correctness/noEmptyPattern: <explanation>
-const LoginForm = ({}: { handleModalClose: () => void }) => {
-  const [userFormData, setUserFormData] = useState<User>({ username: '', email: '', password: '', savedBooks: [] });
-  const [validated] = useState(false);
+interface LoginUserResponse {
+  login: {
+    token: string;
+  };
+}
+
+const LoginForm = ({ handleModalClose }: { handleModalClose: () => void }) => {
+  const [userFormData, setUserFormData] = useState<User>({ username: '', 
+     email: '', 
+     password: '', 
+     savedBooks: [],
+     });
+
+  const [validated, setValidated] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
+
+  const [loginUser] = useMutation<LoginUserResponse>(LOGIN_USER);
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -23,20 +34,26 @@ const LoginForm = ({}: { handleModalClose: () => void }) => {
 
     // check if form has everything (as per react-bootstrap docs)
     const form = event.currentTarget;
-    if (form.checkValidity() === false) {
+    if (!form.checkValidity()) {
       event.preventDefault();
       event.stopPropagation();
+      setValidated(true);
+      setShowAlert(true);
+      return;
     }
 
     try {
-      const response = await loginUser(userFormData);
+      const { data } = await loginUser({
+        variables: { email: userFormData.email, password: userFormData.password }, 
+      });
 
-      if (!response.ok) {
-        throw new Error('something went wrong!');
+      const token = data?.login.token;
+      if (token) {
+        Auth.login(token);
+        handleModalClose();
+      } else {
+        throw new Error('No token found');
       }
-
-      const { token } = await response.json();
-      Auth.login(token);
     } catch (err) {
       console.error(err);
       setShowAlert(true);
