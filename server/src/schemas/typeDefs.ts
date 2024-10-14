@@ -32,6 +32,7 @@ type User {
 
 type Query {
     me: User
+    Book(userId: ID!): [Book]
     }
 
 type Mutation {

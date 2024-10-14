@@ -7,14 +7,13 @@ import { expressMiddleware } from '@apollo/server/express4';
 import { typeDefs, resolvers } from './schemas/index.js';
 import { authenticateToken } from './utils/auth.js';
 
+const startApolloServer = async () => {
 const server = new ApolloServer({
   typeDefs,
   resolvers
 });
 
-const startApolloServer = async () => {
-  await server.start();
-  await db.openUri(process.env.MONGODB_URI || 'mongodb://localhost:27017/yourdbname');
+await server.start();
 
   const PORT = process.env.PORT || 3001;
   const app = express();
@@ -25,8 +24,7 @@ const startApolloServer = async () => {
   app.use('/graphql', expressMiddleware(server as any,
     {
       context: authenticateToken as any
-    }
-  ));
+    }));
 
   if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.join(__dirname, '../client/dist')));
@@ -36,10 +34,17 @@ const startApolloServer = async () => {
     });
   }
 
-  app.listen(PORT, () => {
-    console.log(`API server running on port ${PORT}!`);
-    console.log(`Use GraphQL at http://localhost:${PORT}/graphql`);
+  db.once('open', () => {
+    app.listen(PORT, () => {
+      console.log(`🚀 Server ready at http://localhost:${PORT}/graphql`);
+      console.log(`🚀 Subscriptions ready at ws://localhost:${PORT}/graphql`);
+    });
   });
-};
+
+  db.on('error', (err) => {
+    console.error('MongoDB connection error:', err);
+  });
+  
+}
 
 startApolloServer();

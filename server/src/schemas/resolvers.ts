@@ -1,6 +1,6 @@
-import { BookDocument } from '../models/Book';
-import User, { UserDocument } from '../models/User';
-import { AuthenticationError, signToken } from '../utils/auth';
+import { BookDocument } from '../models/Book.js';
+import User, { UserDocument } from '../models/User.js';
+import { AuthenticationError, signToken } from '../utils/auth.js';
 
 interface AddUserArgs {
     input: {
@@ -42,13 +42,9 @@ const resolvers = {
             return user;
         },
 
-        bookSchema: async (_parent: any, { userId }: { userId: string }): Promise<BookDocument[] | null> => {
+        Book: async (_parent: any, { userId }: { userId: string }): Promise<BookDocument[] | null> => {
             const user = await User.findById(userId);
             return user ? user.savedBooks : null;
-        },
-
-        User: async (_parent: any, { _id }: { _id: string }): Promise<UserDocument | null> => {
-            return User.findById(_id).populate('savedBooks');
         },
     },
 

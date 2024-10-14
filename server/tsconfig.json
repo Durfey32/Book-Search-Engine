@@ -2,6 +2,7 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     /* Modules */
+    "module": "es2015" /* Set the module system to 'es2015' or later. */,
     "rootDir": "src" /* Specify the root folder within your source files. */,
 
     /* Emit */
@@ -9,5 +10,9 @@
     // "noEmitOnError": true /* Disable emitting files if any type checking errors are reported. */
   },
   "include": ["src"],
-  "typeRoots": ["./node_modules/@types", "./src/types"]
+  "typeRoots": ["./node_modules/@types", "./src/types"],
+  "watch": ["src"],
+  "ext": "ts,json",
+  "ignore": ["dist"],
+  "exec": "ts-node src/server.ts"
 }

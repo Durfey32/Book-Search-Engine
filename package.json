@@ -2,9 +2,13 @@
   "name": "googlebooks-app",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "main": "server/server.js",
   "scripts": {
     "start": "node server/dist/server.js",
+    "start:dev": "concurrently \"cd server && ts-node-dev --esm src/server.ts\" \"wait-on tcp:3001 && cd client && npm run dev\"",
+    "server": "cd server && npm start",
+    "server:dev": "cd server && npm run dev",
     "develop": "concurrently \"cd server && npm run watch\" \"cd client && npm run dev\"",
     "install": "cd server && npm i && cd ../client && npm i",
     "build": "concurrently \"cd server && npm run build\" \"cd client && npm run build\"",
@@ -16,7 +20,9 @@
   "devDependencies": {
     "concurrently": "^8.2.0",
     "nodemon": "^3.1.7",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "wait-on": "^8.0.1"
   },
   "dependencies": {
     "@apollo/client": "^3.11.8",
