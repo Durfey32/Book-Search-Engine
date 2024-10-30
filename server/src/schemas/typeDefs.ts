@@ -31,6 +31,12 @@ type User {
     title: String
   }
 
+input UserInput {
+    username: String
+    email: String
+    password: String
+  }
+
 type Query {
     me: User
   }

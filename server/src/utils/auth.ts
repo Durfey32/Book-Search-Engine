@@ -20,6 +20,7 @@ export const authenticateToken = ({ req }: any) => {
       maxAge: '1h', 
     }); 
     req.user = data;
+    console.log('JWT_SECRET_KEY', process.env.JWT_SECRET_KEY);
   } catch (err) {
     console.error(err);
     throw new GraphQLError('Invalid token');
