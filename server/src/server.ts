@@ -6,19 +6,24 @@ import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
 import { typeDefs, resolvers } from './schemas/index.js';
 import { authenticateToken } from './utils/auth.js';
+import { fileURLToPath } from 'url';
 
-const startApolloServer = async () => {
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const server = new ApolloServer({
   typeDefs,
   resolvers
 });
 
-await server.start();
+const startApolloServer = async () => {
+  await server.start();
+  await db();
 
   const PORT = process.env.PORT || 3001;
   const app = express();
 
-  app.use(express.urlencoded({ extended: false }));
+  app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
 
   app.use('/graphql', expressMiddleware(server as any,
@@ -34,17 +39,10 @@ await server.start();
     });
   }
 
-  db.once('open', () => {
     app.listen(PORT, () => {
       console.log(`🚀 Server ready at http://localhost:${PORT}/graphql`);
       console.log(`🚀 Subscriptions ready at ws://localhost:${PORT}/graphql`);
     });
-  });
-
-  db.on('error', (err) => {
-    console.error('MongoDB connection error:', err);
-  });
-  
 }
 
 startApolloServer();

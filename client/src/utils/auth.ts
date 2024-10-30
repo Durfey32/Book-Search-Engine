@@ -10,11 +10,7 @@ interface UserToken {
 class AuthService {
   // get user data
   getProfile() {
-    const token = this.getToken();
-    if (token) {
-    return jwtDecode(token);
-  }
-  return null;
+    return jwtDecode(this.getToken() || '');
   }
 
   // check if user's logged in
@@ -56,25 +52,7 @@ class AuthService {
     window.location.assign('/');
   }
 
-  getSavedBookIds() {
-    const savedBookIds = localStorage.getItem('saved_books');
-    return savedBookIds ? JSON.parse(savedBookIds) : [];
-  }
-
-  saveBookIds(bookId: string[]) {
-    if (bookId.length) {
-      localStorage.setItem('saved_books', JSON.stringify(bookId));
-    } else {
-      localStorage.removeItem('saved_books');
-    }
-  }
-
-  removeBookID(bookId: string): void {
-    const savedBookIds = this.getSavedBookIds();
-    const updatedSavedBookIds = savedBookIds.filter((id: string) => id !== bookId);
   
-    this.saveBookIds(updatedSavedBookIds);
-  }
 }
 
 export default new AuthService();

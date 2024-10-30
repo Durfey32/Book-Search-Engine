@@ -6,12 +6,6 @@ import { ADD_USER } from '../utils/mutations';
 import Auth from '../utils/auth';
 import type { User } from '../models/User';
 
-interface AddUserResponse {
-  addUser: {
-    token:string;
-  }
-}
-
 const SignupForm =  () => {
   const [userFormData, setUserFormData] = useState<User>({
     username: '',
@@ -20,9 +14,9 @@ const SignupForm =  () => {
     savedBooks: [],
   });
 
-  const [validated, setValidated] = useState(false);
+  const [validated] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
-  const [addUser] = useMutation<AddUserResponse>(ADD_USER);
+  const [addUser] = useMutation(ADD_USER);
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -33,36 +27,22 @@ const SignupForm =  () => {
     event.preventDefault();
 
     const form = event.currentTarget;
-    if (!form.checkValidity()) {
+    if (form.checkValidity() === false) {
       event.preventDefault();
       event.stopPropagation(); 
-      setValidated(true);
-      setShowAlert(true); 
-      return; 
     }
 
     try {
       const { data } = await addUser({
-        variables: { input: userFormData },
+        variables: { input: { ...userFormData },
+        },
       });
 
-      const token = data?.addUser.token; 
-      if (token) {
-        Auth.login(token);
-      } else {
-        throw new Error('Token is undefined');
-      }
-      
-      resetForm();
+      Auth.login(data.addUser.token);
     } catch (err) {
       console.error(err);
       setShowAlert(true);
     }
-  };
-
-  const resetForm = () => {
-    setShowAlert(false);
-    setValidated(false);
 
     setUserFormData({
       username: '',

@@ -1,5 +1,4 @@
-import { BookDocument } from '../models/Book.js';
-import User, { UserDocument } from '../models/User.js';
+import User from '../models/index.js';
 import { AuthenticationError, signToken } from '../utils/auth.js';
 
 interface AddUserArgs {
@@ -33,71 +32,54 @@ interface SaveBookArgs {
 
 const resolvers = {
     Query: {
-        me: async (_parent: any, _args: any, context: { user: UserDocument | null }): Promise<UserDocument | null> => {
+        me: async (_parent: any, _args: any, context: any) => {
             if (!context.user) {
-                throw new AuthenticationError('You must be logged in to view your profile');
+              return User.findOne({ _id: context.user._id})
             }
-
-            const user = await User.findById(context.user._id).populate('savedBooks');
-            return user;
-        },
-
-        Book: async (_parent: any, { userId }: { userId: string }): Promise<BookDocument[] | null> => {
-            const user = await User.findById(userId);
-            return user ? user.savedBooks : null;
+            throw new AuthenticationError('You must be logged in to view your profile');
         },
     },
 
     Mutation: {
-        addUser: async (_parent: any, { input }: AddUserArgs): Promise<{ token: string; user: UserDocument }> => {
-            const user = await User.create(input);
+        addUser: async (_parent: any, { input }: AddUserArgs) => {
+            const user = await User.create({ ...input });
             const token = signToken(user.username, user.email, user._id);
             return { token, user };
         },
 
-        login: async (_parent: any, { email, password }: LoginUserArgs): Promise<{ token: string; user: UserDocument } | null> => {
-            const user = await User.findOne
-                ({ email });
-
+        login: async (_parent: any, { email, password }: LoginUserArgs) => {
+            const user = await User.findOne({ email });
             if (!user) {
                 throw new AuthenticationError('Incorrect credentials');
             }
-
             const isValidatePassword = await user.isCorrectPassword(password);
             if (!isValidatePassword) {
                 throw new AuthenticationError('Incorrect credentials');
             }
-
             const token = signToken(user.username, user.email, user._id);
             return { token, user };
         },
 
-        saveBook: async (_parent: any, { input }: SaveBookArgs, context: { user: UserDocument | null }): Promise<UserDocument | null> => {
-            if (!context.user) {
-              throw new AuthenticationError('You must be logged in to save a book');
-            }
-
-            const updatedUser = await User.findOneAndUpdate(
+        saveBook: async (_parent: any, { input }: SaveBookArgs, context: any) => {
+            if (context.user) {
+              return User.findOneAndUpdate(
                 { _id: context.user._id },
-        { $addToSet: { savedBooks: input } },
-        { new: true }
-      ).populate('savedBooks');
-
-      return updatedUser;
+                { $addToSet: { savedBooks: input } },
+                { new: true, runValidators: true }
+              );
+            }
+      throw new AuthenticationError('You must be logged in to save a book');
     },
 
-    removeBook: async (_parent: any, { bookId }: RemoveBookArgs, context: { user: UserDocument | null }): Promise<UserDocument | null> => {
-        if (!context.user) {
-          throw new AuthenticationError('You must be logged in to remove a book');
+    removeBook: async (_parent: any, { bookId }: RemoveBookArgs, context: any ) => {
+        if (context.user) {
+          return User.findByIdAndUpdate(
+            { _id: context.user._id },
+            { $pull: { savedBooks: { bookId: bookId } } },
+            { new: true }
+          );
         }
-  
-        const updatedUser = await User.findOneAndUpdate(
-          { _id: context.user._id },
-          { $pull: { savedBooks: { bookId } } },
-          { new: true }
-        ).populate('savedBooks');
-  
-        return updatedUser;
+        throw new AuthenticationError('You must be logged in to remove a book');
         },
     },
 };

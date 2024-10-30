@@ -1,29 +1,29 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { Container, Col, Form, Button, Card, Row } from 'react-bootstrap';
-
-import { useMutation } from '@apollo/client';
+import { useMutation, useQuery } from '@apollo/client';
 import { SAVE_BOOK } from '../utils/mutations';
+import { GET_ME } from '../utils/queries';
 import Auth from '../utils/auth';
 import { searchGoogleBooks } from '../utils/searchGoogleBooks';
 import type { Book } from '../models/Book';
 import type { GoogleAPIBook } from '../models/GoogleAPIBook';
 
 const SearchBooks = () => {
-  // create state for holding returned google api data
   const [searchedBooks, setSearchedBooks] = useState<Book[]>([]);
-  // create state for holding our search field data
   const [searchInput, setSearchInput] = useState('');
+  const [savedBookIds, setSavedBookIds] = useState<string[]>([]);
 
-  // create state to hold saved bookId values
-  const [savedBookIds, setSavedBookIds] = useState(Auth.getSavedBookIds());
+  const [savedBook, { error: savedBookError }] = useMutation(SAVE_BOOK, {
+    refetchQueries: [{ query: GET_ME }],
+  });
 
-  const [saveBookMutation] = useMutation(SAVE_BOOK);
+  if (savedBookError) {
+    console.log(JSON.stringify(savedBookError));
+  }
 
-  // set up useEffect hook to save `savedBookIds` list to localStorage on component unmount
-  useEffect(() => {
-    return () => Auth.saveBookIds(savedBookIds);
-  }, [savedBookIds]);
+const { data: userData } = useQuery(GET_ME);
+const userSavedBook = userData?.me.savedBooks || [];
 
   // create method to search for books and set state on form submit
   const handleFormSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -42,18 +42,14 @@ const SearchBooks = () => {
 
       const { items } = await response.json();
 
-      if (!items || !items.length) {
-        console.error('No results found!');
-        setSearchedBooks([]);
-        return;
-      }
-
       const bookData = items.map((book: GoogleAPIBook) => ({
         bookId: book.id,
         authors: book.volumeInfo.authors || ['No author to display'],
-        title: book.volumeInfo.title,
-        description: book.volumeInfo.description,
-        image: book.volumeInfo.imageLinks?.thumbnail || '',
+        title: book.volumeInfo.title || 'No title to display',
+        description: book.volumeInfo.description || 'No description to display',
+        image: book.volumeInfo.imageLinks?.thumbnail
+          ? book.volumeInfo.imageLinks.thumbnail.replace('http://', 'https://')
+          : '',
       }));
 
       setSearchedBooks(bookData);
@@ -63,9 +59,7 @@ const SearchBooks = () => {
     }
   };
 
-  // create function to handle saving a book to our database
   const handleSaveBook = async (bookId: string) => {
-    // find the book in `searchedBooks` state by the matching id
     const bookToSave = searchedBooks.find((book) => book.bookId === bookId);
 
     if (!bookToSave) {
@@ -81,7 +75,7 @@ const SearchBooks = () => {
     }
 
     try {
-      await saveBookMutation({
+      await savedBook({
         variables: { book: bookToSave }
         });
         
@@ -141,10 +135,10 @@ const SearchBooks = () => {
                     <Card.Text>{book.description}</Card.Text>
                     {Auth.loggedIn() && (
                       <Button
-                        disabled={savedBookIds?.some((savedBookId: string) => savedBookId === book.bookId)}
+                        disabled={userSavedBook.some((savedBookId: string) => savedBookId === book.bookId)}
                         className='btn-block btn-info'
                         onClick={() => handleSaveBook(book.bookId)}>
-                        {savedBookIds?.some((savedBookId: string) => savedBookId === book.bookId)
+                        {userSavedBook.some((savedBookId: string) => savedBookId === book.bookId)
                           ? 'This book has already been saved!'
                           : 'Save this Book!'}
                       </Button>

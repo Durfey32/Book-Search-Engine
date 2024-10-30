@@ -1,20 +1,16 @@
 import { Container, Card, Button, Row, Col } from 'react-bootstrap';
 import { useQuery, useMutation } from '@apollo/client';
-import { QUERY_ME } from '../utils/queries';
+import { GET_ME } from '../utils/queries';
 import { REMOVE_BOOK } from '../utils/mutations';
 import Auth from '../utils/auth';
 import type { Book } from '../models/Book';
 
-
 const SavedBooks = () => {
-  const { loading, data } = useQuery(QUERY_ME);
-  const [removeBookMutation] = useMutation(REMOVE_BOOK);
+  const { loading, data, refetch } = useQuery(GET_ME);
 
-  if (loading) {
-    return <h2>LOADING...</h2>;
-  }
+  const [removeBook] = useMutation(REMOVE_BOOK);
 
-  const userData = data?.me || { savedBooks: [] };
+  const userData = data?.me || {};
 
   const handleDeleteBook = async (bookId: string) => {
     const token = Auth.loggedIn() ? Auth.getToken() : null;
@@ -24,15 +20,18 @@ const SavedBooks = () => {
     }
 
     try {
-      await removeBookMutation({
+      await removeBook({
         variables: { bookId },
       });
-
-      Auth.removeBookID(bookId);
+      refetch();
     } catch (err) {
       console.error('Something went wrong!', err);
     }
   };
+
+  if (loading) {
+    return <h2>LOADING...</h2>;
+  }
 
   return (
     <>
