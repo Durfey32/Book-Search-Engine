@@ -33,7 +33,7 @@ interface SaveBookArgs {
 const resolvers = {
     Query: {
         me: async (_parent: any, _args: any, context: any) => {
-            if (!context.user) {
+            if (context.user) {
               return User.findOne({ _id: context.user._id})
             }
             throw new AuthenticationError('You must be logged in to view your profile');

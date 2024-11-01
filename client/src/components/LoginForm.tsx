@@ -11,7 +11,6 @@ const LoginForm = ({}: { handleModalClose: () => void }) => {
   const [userFormData, setUserFormData] = useState<User>({ username: '', 
      email: '', 
      password: '', 
-     savedBooks: [],
      });
 
   const [validated] = useState(false);

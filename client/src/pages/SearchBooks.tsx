@@ -14,9 +14,7 @@ const SearchBooks = () => {
   const [searchInput, setSearchInput] = useState('');
   const [savedBookIds, setSavedBookIds] = useState<string[]>([]);
 
-  const [savedBook, { error: savedBookError }] = useMutation(SAVE_BOOK, {
-    refetchQueries: [{ query: GET_ME }],
-  });
+  const [savedBook, { error: savedBookError }] = useMutation(SAVE_BOOK);
 
   if (savedBookError) {
     console.log(JSON.stringify(savedBookError));
@@ -76,7 +74,7 @@ const userSavedBook = userData?.me.savedBooks || [];
 
     try {
       await savedBook({
-        variables: { book: bookToSave }
+        variables: { input: bookToSave }
         });
         
        // if book successfully saves to user's account, save book id to state

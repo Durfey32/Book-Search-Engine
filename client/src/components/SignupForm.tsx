@@ -11,7 +11,6 @@ const SignupForm =  () => {
     username: '',
     email: '',
     password: '',
-    savedBooks: [],
   });
 
   const [validated] = useState(false);

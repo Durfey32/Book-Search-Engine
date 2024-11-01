@@ -16,11 +16,12 @@ export const authenticateToken = ({ req }: any) => {
   }
 
   try {
+    console.log('JWT_SECRET_KEY', process.env.JWT_SECRET_KEY);
+    console.log('token', token);
     const { data }: any = jwt.verify(token, process.env.JWT_SECRET_KEY || '', {
       maxAge: '1h', 
     }); 
     req.user = data;
-    console.log('JWT_SECRET_KEY', process.env.JWT_SECRET_KEY);
   } catch (err) {
     console.error(err);
     throw new GraphQLError('Invalid token');

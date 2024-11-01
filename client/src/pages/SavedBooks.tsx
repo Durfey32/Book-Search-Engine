@@ -6,7 +6,7 @@ import Auth from '../utils/auth';
 import type { Book } from '../models/Book';
 
 const SavedBooks = () => {
-  const { loading, data, refetch } = useQuery(GET_ME);
+  const { loading, data } = useQuery(GET_ME);
 
   const [removeBook] = useMutation(REMOVE_BOOK);
 
@@ -23,7 +23,6 @@ const SavedBooks = () => {
       await removeBook({
         variables: { bookId },
       });
-      refetch();
     } catch (err) {
       console.error('Something went wrong!', err);
     }
@@ -46,14 +45,14 @@ const SavedBooks = () => {
       </div>
       <Container>
         <h2 className='pt-5'>
-          {userData.savedBooks.length
-            ? `Viewing ${userData.savedBooks.length} saved ${
-                userData.savedBooks.length === 1 ? 'book' : 'books'
+          {userData?.savedBooks?.length
+            ? `Viewing ${userData?.savedBooks?.length} saved ${
+                userData?.savedBooks?.length === 1 ? 'book' : 'books'
               }:`
             : 'You have no saved books!'}
         </h2>
         <Row>
-          {userData.savedBooks.map((book: Book) => {
+          {userData?.savedBooks?.map((book: Book) => {
             return (
               <Col md='4'>
                 <Card key={book.bookId} border='dark'>
