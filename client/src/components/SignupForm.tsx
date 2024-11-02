@@ -47,7 +47,6 @@ const SignupForm =  () => {
       username: '',
       email: '',
       password: '',
-      savedBooks: [],
     });
   };
 

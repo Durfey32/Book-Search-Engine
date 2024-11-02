@@ -42,6 +42,10 @@ This project is licensed under the MIT License.
 ## Tests
 For live testing and to experience the full functionality, visit the hosted website [here](#).
 
+## Example
+<img src="client/src/assets/Book-Search-Engine.gif" alt="Book Search Engine Example" height="700"/>
+
+
 ## Questions?
 For any questions or further information, feel free to reach out:
 
