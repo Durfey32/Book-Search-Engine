@@ -40,7 +40,7 @@ This project is licensed under the MIT License.
 - **Personal Reading List:** Save books to a list, view them, and delete them as desired.
 
 ## Tests
-For live testing and to experience the full functionality, visit the hosted website [here](#).
+For live testing and to experience the full functionality, visit the hosted website [here](https://book-search-engine-sciz.onrender.com).
 
 ## Example
 <img src="client/src/assets/Book-Search-Engine.gif" alt="Book Search Engine Example" height="700"/>
